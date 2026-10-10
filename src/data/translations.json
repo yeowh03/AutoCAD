@@ -1,0 +1,197 @@
+{
+  "FIRE PUMP ROOM": {
+    "fr": "LOCAL DES POMPES INCENDIE",
+    "de": "FEUERLÖSCHPUMPENRAUM",
+    "zh": "消防泵房"
+  },
+  "ELECTRICAL ROOM": {
+    "fr": "LOCAL ÉLECTRIQUE",
+    "de": "ELEKTRORAUM",
+    "zh": "配电室"
+  },
+  "EMERGENCY EXIT": {
+    "fr": "SORTIE DE SECOURS",
+    "de": "NOTAUSGANG",
+    "zh": "紧急出口"
+  },
+  "ACCESS PANEL": {
+    "fr": "PANNEAU D’ACCÈS",
+    "de": "REVISIONSKLAPPE",
+    "zh": "检修口"
+  },
+  "REINFORCED CONCRETE WALL": {
+    "fr": "MUR EN BÉTON ARMÉ",
+    "de": "STAHLBETONWAND",
+    "zh": "钢筋混凝土墙"
+  },
+  "INSTALL EXHAUST FAN ABOVE CEILING": {
+    "fr": "INSTALLER LE VENTILATEUR D’EXTRACTION AU-DESSUS DU PLAFOND",
+    "de": "ABLUFTVENTILATOR ÜBER DER DECKE INSTALLIEREN",
+    "zh": "在吊顶上方安装排风机"
+  },
+  "RETURN AIR DUCT": {
+    "fr": "GAINE DE REPRISE D’AIR",
+    "de": "RÜCKLUFTKANAL",
+    "zh": "回风管"
+  },
+  "INSTALL AHU-01 ABOVE CEILING": {
+    "fr": "INSTALLER AHU-01 AU-DESSUS DU PLAFOND",
+    "de": "AHU-01 ÜBER DER DECKE INSTALLIEREN",
+    "zh": "在吊顶上方安装 AHU-01"
+  },
+  "CONNECT DN100 TO HVAC SYSTEM": {
+    "fr": "RACCORDER DN100 AU SYSTÈME HVAC",
+    "de": "DN100 AN DAS HVAC-SYSTEM ANSCHLIESSEN",
+    "zh": "将 DN100 连接至 HVAC 系统"
+  },
+  "KEEP CLEAR AT ALL TIMES": {
+    "fr": "GARDER DÉGAGÉ EN PERMANENCE",
+    "de": "IMMER FREIHALTEN",
+    "zh": "始终保持畅通"
+  },
+  "FINISHED FLOOR LEVEL": {
+    "fr": "NIVEAU DU SOL FINI",
+    "de": "FERTIGFUSSBODENHÖHE",
+    "zh": "完成面标高"
+  },
+  "STAIRCASE A": {
+    "fr": "ESCALIER A",
+    "de": "TREPPENHAUS A",
+    "zh": "楼梯 A"
+  },
+  "LIFT LOBBY": {
+    "fr": "HALL DES ASCENSEURS",
+    "de": "AUFZUGSVORRAUM",
+    "zh": "电梯厅"
+  },
+  "SERVICE CORRIDOR": {
+    "fr": "COULOIR DE SERVICE",
+    "de": "WARTUNGSGANG",
+    "zh": "设备走廊"
+  },
+  "TOILET": {
+    "fr": "TOILETTES",
+    "de": "TOILETTE",
+    "zh": "卫生间"
+  },
+  "OPEN OFFICE": {
+    "fr": "BUREAU OUVERT",
+    "de": "GROSSRAUMBÜRO",
+    "zh": "开放办公区"
+  },
+  "MEETING ROOM": {
+    "fr": "SALLE DE RÉUNION",
+    "de": "BESPRECHUNGSRAUM",
+    "zh": "会议室"
+  },
+  "STORE ROOM": {
+    "fr": "LOCAL DE STOCKAGE",
+    "de": "LAGERRAUM",
+    "zh": "储藏室"
+  },
+  "SUPPLY AIR DUCT": {
+    "fr": "GAINE DE SOUFFLAGE",
+    "de": "ZULUFTKANAL",
+    "zh": "送风管"
+  },
+  "FIRE DAMPER": {
+    "fr": "CLAPET COUPE-FEU",
+    "de": "BRANDSCHUTZKLAPPE",
+    "zh": "防火阀"
+  },
+  "VERIFY DUCT CONNECTION": {
+    "fr": "VÉRIFIER LE RACCORDEMENT DE LA GAINE",
+    "de": "KANALANSCHLUSS PRÜFEN",
+    "zh": "检查风管连接"
+  },
+  "PUMP MAINTENANCE ACCESS": {
+    "fr": "ACCÈS POUR L’ENTRETIEN DE LA POMPE",
+    "de": "PUMPENWARTUNGSZUGANG",
+    "zh": "水泵维修通道"
+  },
+  "INSULATE ALL EXPOSED PIPEWORK": {
+    "fr": "ISOLER TOUTES LES CANALISATIONS APPARENTES",
+    "de": "ALLE FREILIEGENDEN ROHRE DÄMMEN",
+    "zh": "为所有明装管道保温"
+  },
+  "ROOF DRAIN": {
+    "fr": "ÉVACUATION DE TOITURE",
+    "de": "DACHABLAUF",
+    "zh": "屋面雨水口"
+  },
+  "SITE ENTRANCE": {
+    "fr": "ENTRÉE DU SITE",
+    "de": "GELÄNDEZUFAHRT",
+    "zh": "场地入口"
+  },
+  "LANDSCAPED AREA": {
+    "fr": "ESPACE PAYSAGER",
+    "de": "GRÜNFLÄCHE",
+    "zh": "绿化区域"
+  },
+  "EXISTING ROAD": {
+    "fr": "ROUTE EXISTANTE",
+    "de": "BESTEHENDE STRASSE",
+    "zh": "现有道路"
+  },
+  "PROPERTY BOUNDARY": {
+    "fr": "LIMITE DE PROPRIÉTÉ",
+    "de": "GRUNDSTÜCKSGRENZE",
+    "zh": "用地红线"
+  },
+  "PEDESTRIAN WALKWAY": {
+    "fr": "CHEMINEMENT PIÉTON",
+    "de": "FUSSGÄNGERWEG",
+    "zh": "人行道"
+  },
+  "LOADING BAY": {
+    "fr": "AIRE DE LIVRAISON",
+    "de": "LADEZONE",
+    "zh": "装卸区"
+  },
+  "RETAIN EXISTING TREES": {
+    "fr": "CONSERVER LES ARBRES EXISTANTS",
+    "de": "BESTEHENDE BÄUME ERHALTEN",
+    "zh": "保留现有树木"
+  },
+  "Cor-Ten SCREEN": {
+    "fr": "ÉCRAN EN Cor-Ten",
+    "de": "Cor-Ten-SCHIRM",
+    "zh": "Cor-Ten 屏风"
+  },
+  "CHECK CLEARANCE BEFORE INSTALLATION": {
+    "fr": "VÉRIFIER LE DÉGAGEMENT AVANT L’INSTALLATION",
+    "de": "ABSTAND VOR DER INSTALLATION PRÜFEN",
+    "zh": "安装前检查净空"
+  },
+  "INSTALL": {
+    "fr": "INSTALLER",
+    "de": "INSTALLIEREN",
+    "zh": "安装"
+  },
+  "ABOVE CEILING": {
+    "fr": "AU-DESSUS DU PLAFOND",
+    "de": "ÜBER DER DECKE",
+    "zh": "在吊顶上方"
+  },
+  "CONNECT": {
+    "fr": "RACCORDER",
+    "de": "ANSCHLIESSEN",
+    "zh": "连接"
+  },
+  "TO": {
+    "fr": "AU",
+    "de": "AN",
+    "zh": "至"
+  },
+  "SYSTEM": {
+    "fr": "SYSTÈME",
+    "de": "SYSTEM",
+    "zh": "系统"
+  },
+  "SCREEN": {
+    "fr": "ÉCRAN",
+    "de": "SCHIRM",
+    "zh": "屏风"
+  }
+}

@@ -1,0 +1,890 @@
+Build a functional prototype that simulates an enhanced machine translation workflow inside AutoCAD.
+
+The prototype does NOT need to integrate with real AutoCAD or Autodesk MT API.
+
+Instead:
+- Build a simplified AutoCAD-like web UI.
+- Create several sample DWG-like files using mock JSON data.
+- Simulate Autodesk MT by calling the Gemini API for translation.
+- The focus is the USER EXPERIENCE and workflow, not translation model research.
+
+PROJECT OBJECTIVE
+
+Prototype the following design challenge:
+
+“How do we turn Autodesk’s existing machine translation capability into an intuitive, safe, transparent, and scalable translation workflow inside AutoCAD?”
+
+The prototype should demonstrate:
+1. Single-DWG translation from inside an opened drawing.
+2. Batch translation from an AutoCAD-style Home page.
+3. Pre-translation preview and filtering.
+4. Safe output handling.
+5. Same-file language management.
+6. Translation progress.
+7. Translation reporting.
+8. Locate-in-drawing functionality.
+
+Do not build an overly complex CAD engine. The drawing canvas can be a simplified 2D representation containing text boxes, leaders, annotations, dimensions, labels, and basic shapes.
+
+==================================================
+1. TECH STACK
+==================================================
+
+Use a simple modern web stack.
+
+Preferred:
+- React
+- TypeScript
+- Vite
+- CSS / Tailwind if convenient
+- Gemini API for translation
+- Local JSON/mock data for sample DWG files
+
+Keep the implementation easy to run locally.
+
+Provide:
+- complete source code
+- clear folder structure
+- README
+- .env.example
+- exact commands to install and run
+
+Example:
+
+npm install
+npm run dev
+
+Use an environment variable such as:
+
+VITE_GEMINI_API_KEY=
+
+Do not hardcode the API key.
+
+==================================================
+2. SIMPLIFIED AUTOCAD UI
+==================================================
+
+Create an interface that visually resembles AutoCAD enough for prototype testing, but do not try to copy every AutoCAD control.
+
+Main areas:
+
+A. HOME PAGE
+- Recent/sample drawings
+- Button: “Translate Drawings”
+- Cards/list for sample DWG files
+- Open drawing button
+
+B. DRAWING WORKSPACE
+- Dark drawing canvas
+- Top toolbar/ribbon
+- Current file name
+- Target language selector
+- Existing-style buttons:
+  - Translate Selection
+  - Translate All
+- Language selector/toggle
+- Left/right side panels where needed
+- Bottom status bar
+
+The AutoCAD simulation should feel believable during a demo.
+
+==================================================
+3. SAMPLE DWG FILES
+==================================================
+
+Create at least 4 mock DWG files.
+
+Example files:
+- Level_01.dwg
+- Level_02.dwg
+- Mechanical_Plan.dwg
+- Site_Plan.dwg
+
+Represent each file using JSON.
+
+Each drawing should contain around 15–30 text objects.
+
+Each text object should have fields such as:
+
+{
+  "id": "txt-001",
+  "type": "MText",
+  "text": "FIRE PUMP ROOM",
+  "layer": "A-ANNO-NOTE",
+  "x": 240,
+  "y": 180,
+  "width": 160,
+  "height": 40,
+  "locked": false
+}
+
+Supported mock object types can include:
+- MText
+- DBText
+- MultiLeader
+- BlockAttribute
+- Dimension
+- TableCell
+
+Include realistic AEC-style content such as:
+
+Natural language:
+- FIRE PUMP ROOM
+- INSTALL EXHAUST FAN ABOVE CEILING
+- ELECTRICAL ROOM
+- EMERGENCY EXIT
+- ACCESS PANEL
+- REINFORCED CONCRETE WALL
+- RETURN AIR DUCT
+
+Codes / values:
+- FFL 0.000
+- D5.1
+- W5.1
+- AHU-01
+- DN100
+- HVAC
+- 1200
+- EL +12.500
+
+Include different layers such as:
+- A-ANNO-NOTE
+- A-ANNO-DIMS
+- M-ANNO-NOTE
+- M-EQPM-TAGS
+- E-ANNO-NOTE
+- S-GRID
+
+Render each object approximately at its x/y coordinate so the user can visually locate it.
+
+==================================================
+4. DRAWING-LEVEL ENTRY POINT
+==================================================
+
+When a user opens a DWG, preserve the current PoC concept:
+
+Target Language:
+[ French ▼ ]
+
+Buttons:
+[ Translate Selection ]
+[ Translate All ]
+
+Do NOT replace these with command-line interactions.
+
+Translate Selection:
+- user can click text objects on the drawing canvas
+- selected objects become visually highlighted
+- clicking Translate Selection starts the workflow only for selected objects
+
+Translate All:
+- starts the workflow for all eligible text objects in the current DWG
+
+==================================================
+5. HOMEPAGE BATCH ENTRY POINT
+==================================================
+
+On the AutoCAD-style homepage, add:
+
+[ Translate Drawings ]
+
+Clicking it opens a batch-selection interface.
+
+Allow user to select multiple DWGs:
+
+☑ Level_01.dwg
+☑ Level_02.dwg
+☐ Mechanical_Plan.dwg
+☑ Site_Plan.dwg
+
+Show:
+“3 drawings selected”
+
+Allow target language selection.
+
+Then continue into the same translation setup / preview workflow.
+
+Purpose:
+The current PoC only works on the open DWG. This prototype must demonstrate how translation can scale across multiple files without opening each file manually.
+
+==================================================
+6. TRANSLATION FILTERS
+==================================================
+
+Before translation, provide OPTIONAL filters.
+
+Do not make object-type filtering the central feature.
+
+A. OBJECT TYPES
+Allow optional inclusion/exclusion:
+
+☑ MText
+☑ DBText
+☑ MultiLeader
+☑ Block Attributes
+☐ Dimensions
+☐ Table Cells
+
+Purpose:
+Users may want to translate general annotations while excluding structured content such as dimensions or title-block attributes.
+
+B. LAYERS
+Allow user to include/exclude layers.
+
+Example:
+
+☑ A-ANNO-NOTE
+☑ M-ANNO-NOTE
+☐ A-ANNO-DIMS
+☐ S-GRID
+
+C. PATTERN EXCLUSION
+
+Provide simple predefined options:
+
+☑ Skip numeric-only text
+☑ Skip likely dimensions / levels
+☑ Skip drawing references / short codes
+
+Example strings that can be automatically excluded:
+- D5.1
+- W5.1
+- FFL 0.000
+- EL +12.500
+- pure numbers
+
+The purpose is NOT to claim better semantic translation.
+
+The purpose is to avoid sending obvious non-linguistic strings to the translation API unnecessarily and to make the report cleaner.
+
+Also allow:
+[ + Add custom exclusion pattern ]
+
+==================================================
+7. REUSABLE PRESETS
+==================================================
+
+Allow users to save translation/filter settings.
+
+Example:
+
+Preset:
+“Architectural Notes”
+
+Contains:
+- MText
+- DBText
+- MultiLeader
+- A-ANNO-NOTE
+- exclude dimensions
+- exclude code patterns
+
+Provide:
+
+[ Save Preset ]
+[ Load Preset ]
+
+Include one or two pre-created presets for demonstration.
+
+Purpose:
+Show scalability when the same settings need to be reused across many DWG files.
+
+==================================================
+8. PROJECT GLOSSARY / PROTECTED TERMS
+==================================================
+
+Add an optional glossary section.
+
+Two categories:
+
+A. DO NOT TRANSLATE
+
+Example:
+HVAC
+AHU
+AHU-01
+DN100
+Cor-Ten
+
+B. PREFERRED TRANSLATIONS
+
+Example:
+Finished Floor Level → <user-defined target term>
+Fire Pump Room → <user-defined target term>
+
+Allow user to add/remove entries.
+
+This should be deterministic and user-controlled.
+
+Do NOT build an AI system that infers project context.
+
+When translating a sentence containing protected terms, preserve those terms.
+
+For example:
+
+Input:
+INSTALL AHU-01 ABOVE CEILING
+
+AHU-01 is protected.
+
+Gemini should translate the rest of the sentence while AHU-01 remains unchanged.
+
+This can be implemented using placeholder masking before the API call and restoring the term afterward.
+
+==================================================
+9. PRE-TRANSLATION PREVIEW
+==================================================
+
+Before calling Gemini, always show a preview.
+
+Example:
+
+Translate to French
+
+Scope:
+Level_03.dwg
+
+Detected:
+1,152 text objects
+
+Included:
+444
+
+Excluded:
+523 by filters
+128 protected / non-translatable
+42 numeric / dimensional strings
+15 unsupported
+
+For the prototype, use the actual counts from mock data.
+
+For batch mode:
+
+80 drawings selected
+12,431 objects detected
+8,204 eligible
+
+Obviously the sample prototype can use smaller numbers.
+
+The point is to show:
+- what will be translated
+- what will be excluded
+- why
+
+Allow user to expand:
+[ View Excluded Items ]
+
+==================================================
+10. OUTPUT MODE
+==================================================
+
+During the pre-translation preview, always ask where the translation should be stored.
+
+Provide BOTH options.
+
+Option 1:
+
+● Add target language to this DWG
+
+Description:
+“Original source text will remain available.”
+
+Option 2:
+
+○ Create translated copy
+
+Example:
+Level_03_FR.dwg
+
+For batch translation:
+
+Option 1:
+Add French language version to each selected DWG
+
+Option 2:
+Create translated copies
+
+Output folder:
+Translations/FR/
+
+Naming pattern:
+{OriginalName}_FR.dwg
+
+This choice must exist even though same-file language toggling is supported.
+
+==================================================
+11. SAME-FILE LANGUAGE MANAGEMENT
+==================================================
+
+If the user chooses to add translation to the same DWG, preserve the original source text.
+
+Do not overwrite it.
+
+Each object can conceptually store:
+
+{
+  "sourceText": "FIRE PUMP ROOM",
+  "translations": {
+    "fr": "...",
+    "de": "..."
+  }
+}
+
+Add a language selector in the drawing workspace:
+
+Display Language:
+[ English ▼ ]
+
+English
+French
+German
+Chinese
+
+Switching language updates the displayed text objects.
+
+If a translation does not exist for an object, fall back to the source language and mark it subtly.
+
+==================================================
+12. BILINGUAL DISPLAY
+==================================================
+
+Add an optional display mode:
+
+Display:
+● Target language only
+○ Source language only
+○ Bilingual
+
+For bilingual mode, show:
+
+FIRE PUMP ROOM
+<translated text>
+
+This can be simulated mainly for MText and MultiLeader objects.
+
+It does not need perfect AutoCAD formatting.
+
+The goal is to demonstrate the UX concept.
+
+==================================================
+13. GEMINI TRANSLATION
+==================================================
+
+Use Gemini API to simulate Autodesk MT.
+
+Important:
+In the prototype UI and documentation, describe Gemini as a SIMULATION of Autodesk MT API.
+
+Do not present Gemini as the intended production translation engine.
+
+Translation flow:
+
+eligible text
+→ apply protected-term masking
+→ call Gemini
+→ restore protected terms
+→ store translated value
+
+Use a concise translation prompt such as:
+
+“You are simulating a professional machine translation API for an AEC/CAD application.
+
+Translate the provided text from {sourceLanguage} to {targetLanguage}.
+
+Rules:
+- Return only the translated text.
+- Preserve placeholders exactly.
+- Preserve codes, measurements, and acronyms when present as placeholders.
+- Do not explain the translation.”
+
+Send strings individually or in a small structured batch.
+
+Handle Gemini API failures gracefully.
+
+==================================================
+14. TRANSLATION PROGRESS
+==================================================
+
+For one drawing show:
+
+Translating Level_03.dwg
+
+32 / 44 objects processed
+73%
+
+For batch mode show:
+
+Translation Job
+
+Level_01.dwg     Complete
+Level_02.dwg     64%
+Level_03.dwg     Waiting
+Site_Plan.dwg    Waiting
+
+Show:
+“2 of 4 drawings complete”
+
+Use simulated delays if necessary so the progress UI can be demonstrated clearly.
+
+==================================================
+15. TRANSLATION REPORT
+==================================================
+
+After translation, show a report.
+
+Summary:
+
+Translated: 44
+Skipped: 21
+Unchanged: 5
+Failed: 1
+Warnings: 2
+
+Table columns:
+
+Drawing
+Object Type
+Layer
+Original
+Translation
+Status
+Reason
+Action
+
+Statuses:
+- Translated
+- Skipped
+- Unchanged
+- Failed
+- Warning
+
+Reasons might include:
+- Excluded by layer filter
+- Excluded by pattern
+- Protected term
+- No translatable content
+- Gemini API error
+- Locked object
+- Possible text overflow
+
+==================================================
+16. REPORT FILTERING
+==================================================
+
+Add quick filters:
+
+[ All ]
+[ Translated ]
+[ Skipped ]
+[ Unchanged ]
+[ Failed ]
+[ Warnings ]
+
+The user should not have to inspect every successful result.
+
+==================================================
+17. LOCATE IN DRAWING
+==================================================
+
+Every relevant report row should have:
+
+[ Locate ]
+
+When clicked:
+
+1. Open or activate the correct mock DWG.
+2. Switch to the correct language if appropriate.
+3. Pan/zoom the simulated drawing canvas to the object.
+4. Highlight the object temporarily.
+
+This is important.
+
+The report should act as a navigation/diagnostic tool, NOT a separate text editor.
+
+==================================================
+18. REPEATED INSTANCE NAVIGATION
+==================================================
+
+If the same source text appears multiple times, provide:
+
+“12 instances”
+
+[ Previous ] 3 of 12 [ Next ]
+
+For batch translation, allow instances across different drawings.
+
+Example:
+
+FFL 0.000
+
+Level_01.dwg   4
+Level_02.dwg   5
+Level_03.dwg   3
+
+Selecting one should open that drawing and locate the instance.
+
+==================================================
+19. EDITING
+==================================================
+
+Do NOT create a dedicated translation editing interface in the report.
+
+Instead:
+
+Report
+→ Locate object
+→ user edits the text using the normal mock AutoCAD editing interaction
+
+Implement a simple edit interaction on the canvas:
+- double click a text object
+- edit the text
+- save
+
+The purpose is to demonstrate that the translation report helps users find problems while editing remains part of the normal drawing workflow.
+
+==================================================
+20. EXCEPTION / WARNING SIMULATION
+==================================================
+
+Simulate several realistic issues.
+
+Examples:
+
+A. TEXT OVERFLOW
+
+If translated text is much longer than source:
+Status:
+Warning
+
+Reason:
+“Translated text may exceed original text bounds”
+
+Show the text box visually overflowing or highlight it.
+
+B. LOCKED OBJECT
+
+Some sample objects should have:
+
+locked: true
+
+If write-back is attempted:
+Status:
+Failed / Warning
+
+Reason:
+“Object is on a locked layer”
+
+C. API FAILURE
+
+Randomly or deterministically fail one mock item for demonstration.
+
+Reason:
+“Translation service error”
+
+D. UNSUPPORTED OBJECT
+
+Include one unsupported mock object type.
+
+Reason:
+“Object type not supported”
+
+==================================================
+21. LANGUAGE MANAGER
+==================================================
+
+Add a simple panel such as:
+
+Drawing Languages
+
+English      Source
+French       Complete
+German       Complete
+Chinese      Not translated
+
+Display:
+[ French ▼ ]
+
+☐ Bilingual display
+
+[ Add Language ]
+
+The user can add another language later.
+
+==================================================
+22. BATCH RESULTS
+==================================================
+
+After a batch job, show a project-level summary.
+
+Example:
+
+Translation complete
+
+4 drawings processed
+3 complete
+1 complete with warnings
+0 failed
+
+124 translated
+36 skipped
+4 warnings
+
+[ View Report ]
+
+The report should be filterable by drawing.
+
+==================================================
+23. UX PRINCIPLES TO DEMONSTRATE
+==================================================
+
+The prototype should clearly show how the workflow is:
+
+INTUITIVE
+- preserve existing Translate Selection / Translate All buttons
+- use homepage for batch translation
+- guide users through preview → output → translation → report
+- avoid exposing technical API details
+
+SAFE
+- preview before translation
+- allow separate translated copy
+- allow same-file language versions without overwriting source
+- protected terminology
+- warnings for failed/locked/overflow objects
+
+TRANSPARENT
+- show included/excluded counts before translation
+- show progress during translation
+- detailed translation report afterward
+- explain why objects were skipped or failed
+- locate report entries directly in the drawing
+
+SCALABLE
+- batch translation from AutoCAD Home
+- reusable filter presets
+- reusable glossary
+- multiple language versions
+- status tracking across files
+- filter report to only warnings/failures
+
+==================================================
+24. IMPORTANT SCOPE BOUNDARY
+==================================================
+
+Do NOT add:
+- AI-based semantic drawing understanding
+- AI deciding which layer means what
+- AI automatically inferring discipline context
+- another LLM before MT to decide whether something should translate
+- complex CAD geometry
+- real DWG parsing
+- real Autodesk API integration
+
+This project is primarily a UX/workflow prototype.
+
+Gemini is only being used to simulate the translation output of Autodesk MT API.
+
+==================================================
+25. DEMO SCENARIOS
+==================================================
+
+Make sure the finished prototype supports these demonstrations.
+
+SCENARIO 1 — SINGLE DRAWING
+
+1. Open Level_01.dwg
+2. Select French
+3. Click Translate All
+4. Configure filters
+5. See pre-translation preview
+6. Choose “Add French to this DWG”
+7. Translate using Gemini
+8. Watch progress
+9. Open translation report
+10. Filter warnings
+11. Locate an object
+12. Switch between English and French
+13. Enable bilingual display
+
+SCENARIO 2 — TRANSLATE SELECTION
+
+1. Open Mechanical_Plan.dwg
+2. Select 3 text objects
+3. Click Translate Selection
+4. Translate only those objects
+
+SCENARIO 3 — SEPARATE COPY
+
+1. Open Site_Plan.dwg
+2. Click Translate All
+3. Choose “Create translated copy”
+4. Generate Site_Plan_FR.dwg
+5. Show both original and translated files on Home
+
+SCENARIO 4 — BATCH TRANSLATION
+
+1. Go to AutoCAD Home
+2. Click Translate Drawings
+3. Select multiple DWGs
+4. Apply a saved preset
+5. Select French
+6. Choose translated copies or same-file language versions
+7. Run batch
+8. Show per-file progress
+9. Open project-level report
+10. Locate an issue in one drawing
+
+SCENARIO 5 — GLOSSARY
+
+Protected:
+AHU-01
+DN100
+HVAC
+
+Translate:
+
+“INSTALL AHU-01 ABOVE CEILING”
+
+The output should translate the natural-language parts while preserving AHU-01 exactly.
+
+==================================================
+26. VISUAL QUALITY
+==================================================
+
+Make the prototype polished enough for a university/project presentation.
+
+Prioritise:
+- clean AutoCAD-inspired dark interface
+- clear hierarchy
+- consistent spacing
+- readable tables
+- believable drawing canvas
+- simple transitions
+- visible state changes
+- clear status badges
+
+Do not spend excessive time recreating exact AutoCAD graphics.
+
+The user should immediately understand that it represents:
+“AutoCAD with an improved translation workflow.”
+
+==================================================
+27. DELIVERABLES
+==================================================
+
+Generate:
+
+1. Full project source code
+2. Mock DWG JSON files
+3. Gemini translation service
+4. All screens and interactions
+5. README with:
+   - setup
+   - environment variable configuration
+   - how Gemini is used
+   - how to run the prototype
+   - prototype limitations
+6. .env.example
+7. Clear folder structure
+
+The prototype should be fully runnable and suitable for a live demo.
