@@ -916,3 +916,72 @@ test('different-status language results have separate records and separate Locat
   expect(stored.jobs[0].rows.map((row:{status:string})=>row.status)).toEqual(['Warning','Translated']);
   expect(stored.jobs[0].rows[0].reason).toBe('Translated text may exceed original text bounds');
 });
+
+
+test('overflow uses the visible text limits and remains dashed during selection and Locate', async ({ page }) => {
+  const source = 'INSTALL AHU-01 ABOVE CEILING';
+  const translated = '在吊顶上方安装 AHU-01';
+  const limits = await page.evaluate(({ source, translated }) => {
+    const context = document.createElement('canvas').getContext('2d')!;
+    context.font = '11px Arial';
+    const width = context.measureText(translated).width;
+    const limits = { outside: width - 2, inside: width + 2 };
+    const key = 'cad-translate-studio-v2';
+    const state = JSON.parse(localStorage.getItem(key)!);
+    const drawing = state.drawings.find((item: { id: string }) => item.id === 'mechanical');
+    for (const [index, limit] of [limits.outside, limits.inside].entries()) {
+      Object.assign(drawing.objects[index], { text: source, language: 'en', type: 'MText', locked: false, fontSize: 11, width: limit, height: 30 });
+    }
+    localStorage.setItem(key, JSON.stringify(state));
+    return limits;
+  }, { source, translated });
+  await page.reload();
+  await page.getByLabel('Translation provider', { exact: true }).selectOption('demo');
+  await openDrawing(page, 'Mechanical_Plan.dwg');
+  for (const id of ['txt-001', 'txt-002']) await page.locator('[data-object-id="' + id + '"]').click();
+  await page.getByRole('button', { name: /Translate Selection/ }).click();
+  await page.getByRole('button', { name: 'Remove French', exact: true }).click();
+  await selectLanguage(page, 'Chinese (Simplified)');
+  await run(page);
+  await expect(page.locator('[data-report-object-id="txt-001"]')).toHaveAttribute('data-report-status', 'Warning');
+  await expect(page.locator('[data-report-object-id="txt-002"]')).toHaveAttribute('data-report-status', 'Translated');
+
+  await locate(page, 'txt-001', 'Mechanical_Plan_ZH.dwg');
+  const object = page.locator('[data-object-id="txt-001"]');
+  const dimensions = await object.evaluate(element => {
+    const bounds = element.querySelector<SVGRectElement>('.text-bounds')!;
+    const text = element.querySelector<SVGTextElement>('text')!;
+    const rendered = text.getBBox();
+    const style = getComputedStyle(bounds);
+    return { x: bounds.x.baseVal.value, y: bounds.y.baseVal.value, width: bounds.width.baseVal.value, height: bounds.height.baseVal.value, right: rendered.x + rendered.width, stroke: style.stroke, dash: style.strokeDasharray };
+  });
+  expect(dimensions.x).toBe(0);
+  expect(dimensions.y).toBe(-11);
+  expect(dimensions.width).toBeCloseTo(limits.outside, 3);
+  expect(dimensions.height).toBe(30);
+  // This overrun fitted inside the old selection padding, hiding the warning.
+  expect(dimensions.right - dimensions.width).toBeGreaterThan(0);
+  expect(dimensions.right - dimensions.width).toBeLessThan(5);
+  expect(dimensions.stroke).toBe('rgb(210, 168, 91)');
+  expect(dimensions.dash).not.toBe('none');
+
+  await locate(page, 'txt-002', 'Mechanical_Plan_ZH.dwg');
+  const fitting = page.locator('[data-object-id="txt-002"]');
+  await expect(fitting).not.toHaveClass(/overflow/);
+  const fits = await fitting.evaluate(element => {
+    const bounds = element.querySelector<SVGRectElement>('.text-bounds')!;
+    const rendered = element.querySelector<SVGTextElement>('text')!.getBBox();
+    return rendered.x + rendered.width <= bounds.x.baseVal.value + bounds.width.baseVal.value;
+  });
+  expect(fits).toBe(true);
+
+  await locate(page, 'txt-001', 'Mechanical_Plan_ZH.dwg');
+  await object.dblclick();
+  await page.getByLabel('Drawing text', { exact: true }).fill('短标注');
+  await page.getByRole('button', { name: /Save text/ }).click();
+  await expect(object).not.toHaveClass(/overflow/);
+  await expect(object).toHaveAttribute('data-display-text', '短标注');
+  await backToReport(page);
+  await expect(page.locator('[data-report-object-id="txt-001"]')).toHaveAttribute('data-report-status', 'Warning');
+  await expect(page.locator('[data-report-object-id="txt-001"] .translation-cell')).toHaveText(translated);
+});

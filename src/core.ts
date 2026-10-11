@@ -82,6 +82,10 @@ export function editObject(drawings: Drawing[], drawingId: string, objectId: str
     ...o, text: value, language: d.language, lastStatus: undefined, lastReason: undefined,
   }) });
 }
+// These are the actual text limits; selection and Locate do not add visual padding.
+export function textBounds(object: TextObject) {
+  return { x: 0, y: -(object.fontSize ?? 11), width: object.width, height: object.height };
+}
 export function measureOverflow(object: TextObject, text: string): boolean {
   if (typeof document === 'undefined') return false;
   const context = document.createElement('canvas').getContext('2d');

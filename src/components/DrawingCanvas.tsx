@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Crosshair, Maximize, Minus, Plus, Hand, MousePointer2, LockKeyhole } from 'lucide-react';
-import { measureOverflow, reportReason } from '../core';
+import { measureOverflow, reportReason, textBounds } from '../core';
 import type { Drawing, TextObject } from '../types';
 
 export function Geometry({ drawing }: { drawing: Drawing }) {
@@ -48,7 +48,8 @@ export default function DrawingCanvas({ drawing, selected, onSelect, onEdit, loc
     if (!located || located.drawingId !== drawing.id) return;
     const object = drawing.objects.find(o => o.id === located.objectId);
     if (!object) return;
-    setView({ x: object.x + object.width / 2 - 335, y: object.y - 16 + (object.height + 6) / 2 - 237.5, width: 670, height: 475 });
+    const bounds = textBounds(object);
+    setView({ x: object.x + bounds.x + bounds.width / 2 - 335, y: object.y + bounds.y + bounds.height / 2 - 237.5, width: 670, height: 475 });
     setHighlight(object.id);
     const timer = setTimeout(() => setHighlight(undefined), 4500);
     return () => clearTimeout(timer);
@@ -70,6 +71,7 @@ export default function DrawingCanvas({ drawing, selected, onSelect, onEdit, loc
       <g pointerEvents="none"><Geometry drawing={drawing}/></g>
       {drawing.objects.map(object => {
         const text = object.text;
+        const bounds = textBounds(object);
         const missing = object.language !== drawing.language;
         const active = selected.includes(object.id);
         const overflow = object.lastStatus === 'Warning' || (object.language !== 'en' && measureOverflow(object, text));
@@ -82,13 +84,13 @@ export default function DrawingCanvas({ drawing, selected, onSelect, onEdit, loc
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(object.id); } if (e.key === 'F2') onEdit(object); }}>
           <title>{object.type} · {object.layer}{object.locked ? ' · Locked' : ''}{missing ? ' · Retained input text' : ''}{object.lastStatus ? ' · ' + object.lastStatus : ''}{object.lastReason ? ' · ' + reportReason(object.lastStatus, object.lastReason) : ''}</title>
           {object.type === 'MultiLeader' && <path d="M-22 28 -12 6 -3 6" className="leader" />}
-          <rect className="text-bounds" x="-5" y="-16" width={object.width+10} height={object.height+6} rx="2" />
+          <rect className="text-bounds" {...bounds} />
           <text y="0" fontFamily="Arial" fontSize={object.fontSize ?? 11} fill={active ? '#fff' : object.type === 'Dimension' ? '#acb68e' : object.type === 'Unsupported' ? '#9b80b3' : '#b6d5d2'}>
             {text.split('\n').map((line,index) => <tspan key={index} x="0" dy={index ? (object.fontSize ?? 11)*1.4 : 0}>{line}</tspan>)}
           </text>
           {missing && <circle cx="-10" cy="-4" r="2.5" fill="#d4a55d" />}
           {object.locked && <g transform={`translate(${object.width - 7},-13)`}><LockKeyhole size="9" color="#82919e"/></g>}
-          {(active || highlight === object.id) && <><rect x="-6" y="-17" width="4" height="4" fill="#6ed4de"/><rect x={object.width+2} y="-17" width="4" height="4" fill="#6ed4de"/></>}
+          {(active || highlight === object.id) && <><rect x={bounds.x-2} y={bounds.y-2} width="4" height="4" fill="#6ed4de"/><rect x={bounds.x+bounds.width-2} y={bounds.y-2} width="4" height="4" fill="#6ed4de"/></>}
         </g>;
       })}
     </svg>

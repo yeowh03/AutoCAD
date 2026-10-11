@@ -121,3 +121,6 @@
 .report td.report-status{width:85px;max-width:none;font-size:10px;color:#b7cbd7}
 .report td.reason-cell{width:190px;max-width:260px;font-size:9px;color:#91aabb;overflow-wrap:anywhere}
 .report td.report-action{width:95px;white-space:nowrap}
+
+/* Overflow remains visible when an object is selected or highlighted by Locate. */
+.text-object.selected.overflow .text-bounds,.text-object.located.overflow .text-bounds{stroke:#d2a85b;stroke-dasharray:3 3}
