@@ -1,0 +1,77 @@
+{
+  "id": "locate-demo",
+  "name": "Locate_Demo.dwg",
+  "baseName": "Locate_Demo.dwg",
+  "language": "en",
+  "discipline": "Architecture",
+  "description": "Five identical labels · four statuses · distinct reasons",
+  "folder": "Project / Demonstrations",
+  "demo": "locate",
+  "objects": [
+    {
+      "id": "locate-demo-translated",
+      "type": "MText",
+      "text": "FIRE PUMP ROOM",
+      "language": "en",
+      "layer": "A-ANNO-NOTE",
+      "x": 220,
+      "y": 175,
+      "width": 240,
+      "height": 32,
+      "locked": false,
+      "fontSize": 11
+    },
+    {
+      "id": "locate-demo-overflow",
+      "type": "MText",
+      "text": "FIRE PUMP ROOM",
+      "language": "en",
+      "layer": "A-ANNO-NOTE",
+      "x": 535,
+      "y": 175,
+      "width": 118,
+      "height": 32,
+      "locked": false,
+      "fontSize": 11
+    },
+    {
+      "id": "locate-demo-locked",
+      "type": "MText",
+      "text": "FIRE PUMP ROOM",
+      "language": "en",
+      "layer": "A-ANNO-LOCKED",
+      "x": 845,
+      "y": 175,
+      "width": 240,
+      "height": 32,
+      "locked": true,
+      "fontSize": 11
+    },
+    {
+      "id": "locate-demo-unsupported",
+      "type": "Unsupported",
+      "text": "FIRE PUMP ROOM",
+      "language": "en",
+      "layer": "A-ANNO-NOTE",
+      "x": 220,
+      "y": 365,
+      "width": 240,
+      "height": 32,
+      "locked": false,
+      "fontSize": 11
+    },
+    {
+      "id": "locate-demo-unchanged",
+      "type": "MText",
+      "text": "FIRE PUMP ROOM",
+      "language": "en",
+      "layer": "A-ANNO-NOTE",
+      "x": 650,
+      "y": 365,
+      "width": 240,
+      "height": 32,
+      "locked": false,
+      "fontSize": 11
+    }
+  ]
+}

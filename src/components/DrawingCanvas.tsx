@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Crosshair, Maximize, Minus, Plus, Hand, MousePointer2, LockKeyhole } from 'lucide-react';
-import { measureOverflow } from '../core';
-import type { Drawing, Language, TextObject } from '../types';
+import { measureOverflow, reportReason } from '../core';
+import type { Drawing, TextObject } from '../types';
 
-export type DisplayMode = 'target' | 'source' | 'bilingual';
 export function Geometry({ drawing }: { drawing: Drawing }) {
+  if (drawing.demo === 'locate') return <g className="geometry demo-geometry">
+    {[{x:180,y:110,w:290,h:160},{x:495,y:110,w:290,h:160},{x:810,y:110,w:290,h:160},{x:180,y:310,w:360,h:185},{x:585,y:310,w:400,h:185}].map((room,i)=><g key={i}><rect x={room.x} y={room.y} width={room.w} height={room.h}/><rect x={room.x+7} y={room.y+7} width={room.w-14} height={room.h-14}/><text x={room.x+16} y={room.y+23}>SERVICE CORE {String(i+1).padStart(2,'0')}</text></g>)}
+    <path d="M180 535H1100M180 545H1100"/><text x="180" y="585">LOCATE DEMO / FIVE IDENTICAL SOURCE LABELS</text>
+  </g>;
   if (drawing.discipline === 'Site') return <g className="geometry site-geometry">
     <path d="M160 110 950 90 1060 580 850 600 820 710 150 650Z" strokeDasharray="10 7" />
     <path d="M120 540H1080M120 570H1080" /><path d="M380 90V600M420 90V600" />
@@ -27,11 +30,11 @@ export function Geometry({ drawing }: { drawing: Drawing }) {
 }
 
 export function DrawingThumbnail({ drawing }: { drawing: Drawing }) {
-  return <svg viewBox="95 20 1100 745" className="drawing-thumbnail" aria-hidden="true"><Geometry drawing={drawing}/>{drawing.objects.filter(o => o.type !== 'Unsupported').map(o => <text key={o.id} x={o.x} y={o.y} fontSize="11" fill="#7ec4c6" opacity=".72">{o.sourceText}</text>)}</svg>;
+  return <svg viewBox="95 20 1100 745" className="drawing-thumbnail" aria-hidden="true"><Geometry drawing={drawing}/>{drawing.objects.filter(o => o.type !== 'Unsupported').map(o => <text key={o.id} x={o.x} y={o.y} fontSize="11" fill="#7ec4c6" opacity=".72">{o.text}</text>)}</svg>;
 }
 
-export default function DrawingCanvas({ drawing, language, mode, selected, onSelect, onEdit, located }: {
-  drawing: Drawing; language: Language; mode: DisplayMode; selected: string[];
+export default function DrawingCanvas({ drawing, selected, onSelect, onEdit, located }: {
+  drawing: Drawing; selected: string[];
   onSelect: (id: string) => void; onEdit: (object: TextObject) => void;
   located?: { drawingId: string; objectId: string; nonce: number };
 }) {
@@ -45,7 +48,7 @@ export default function DrawingCanvas({ drawing, language, mode, selected, onSel
     if (!located || located.drawingId !== drawing.id) return;
     const object = drawing.objects.find(o => o.id === located.objectId);
     if (!object) return;
-    setView({ x: object.x - 250, y: object.y - 210, width: 670, height: 475 });
+    setView({ x: object.x + object.width / 2 - 335, y: object.y - 16 + (object.height + 6) / 2 - 237.5, width: 670, height: 475 });
     setHighlight(object.id);
     const timer = setTimeout(() => setHighlight(undefined), 4500);
     return () => clearTimeout(timer);
@@ -66,25 +69,22 @@ export default function DrawingCanvas({ drawing, language, mode, selected, onSel
       <rect x="-2000" y="-2000" width="6000" height="6000" fill="url(#drawing-grid)" pointerEvents="none" />
       <g pointerEvents="none"><Geometry drawing={drawing}/></g>
       {drawing.objects.map(object => {
-        const target = language !== 'en' ? object.translations[language] : undefined;
-        const missing = mode !== 'source' && language !== 'en' && target === undefined;
-        const text = mode === 'source' || language === 'en' ? object.sourceText : target ?? object.sourceText;
-        const bilingual = mode === 'bilingual' && language !== 'en';
+        const text = object.text;
+        const missing = object.language !== drawing.language;
         const active = selected.includes(object.id);
-        const overflow = target !== undefined && language !== 'en' && mode !== 'source' && measureOverflow(object, target);
-        return <g key={object.id} role="button" tabIndex={0} aria-label={object.sourceText + ' (' + object.id + ')'} aria-pressed={active}
-          data-object-id={object.id} data-display-text={text} data-missing={missing}
+        const overflow = object.lastStatus === 'Warning' || (object.language !== 'en' && measureOverflow(object, text));
+        return <g key={object.id} role="button" tabIndex={0} aria-label={object.text + ' (' + object.id + ')'} aria-pressed={active}
+          data-object-id={object.id} data-display-text={text} data-retained={missing} data-language={object.language} data-status={object.lastStatus ?? ''}
           className={['text-object', active ? 'selected' : '', highlight === object.id ? 'located' : '', overflow ? 'overflow' : '', object.locked ? 'locked-object' : ''].join(' ')}
           transform={`translate(${object.x}, ${object.y})`}
           onClick={e => { e.stopPropagation(); if (!panMode) onSelect(object.id); }}
           onDoubleClick={e => { e.stopPropagation(); if (!panMode) onEdit(object); }}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(object.id); } if (e.key === 'F2') onEdit(object); }}>
-          <title>{object.type} · {object.layer}{object.locked ? ' · Locked' : ''}{missing ? ' · Source fallback' : ''}</title>
+          <title>{object.type} · {object.layer}{object.locked ? ' · Locked' : ''}{missing ? ' · Retained input text' : ''}{object.lastStatus ? ' · ' + object.lastStatus : ''}{object.lastReason ? ' · ' + reportReason(object.lastStatus, object.lastReason) : ''}</title>
           {object.type === 'MultiLeader' && <path d="M-22 28 -12 6 -3 6" className="leader" />}
-          <rect className="text-bounds" x="-5" y="-16" width={object.width+10} height={Math.max(object.height+6, bilingual ? 42 : 0)} rx="2" />
+          <rect className="text-bounds" x="-5" y="-16" width={object.width+10} height={object.height+6} rx="2" />
           <text y="0" fontFamily="Arial" fontSize={object.fontSize ?? 11} fill={active ? '#fff' : object.type === 'Dimension' ? '#acb68e' : object.type === 'Unsupported' ? '#9b80b3' : '#b6d5d2'}>
-            {(bilingual ? object.sourceText : text).split('\n').map((line,index) => <tspan key={index} x="0" dy={index ? (object.fontSize ?? 11)*1.4 : 0}>{line}</tspan>)}
-            {bilingual && <tspan x="0" dy="18" fill="#6ed4de">{target ?? '— ' + object.sourceText}</tspan>}
+            {text.split('\n').map((line,index) => <tspan key={index} x="0" dy={index ? (object.fontSize ?? 11)*1.4 : 0}>{line}</tspan>)}
           </text>
           {missing && <circle cx="-10" cy="-4" r="2.5" fill="#d4a55d" />}
           {object.locked && <g transform={`translate(${object.width - 7},-13)`}><LockKeyhole size="9" color="#82919e"/></g>}

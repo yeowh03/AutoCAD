@@ -1,22 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { Language } from '../types';
-import { LANGUAGES } from '../types';
 
-export function LanguageSelect({ value, onChange, label, source = false, disabled = false }: { value: Language; onChange: (value: Language) => void; label: string; source?: boolean; disabled?: boolean }) {
-  return <label className="field-label">{label}<select aria-label={label} value={value} onChange={e => onChange(e.target.value as Language)} disabled={disabled}>
-    {Object.entries(LANGUAGES).filter(([key]) => source || key !== 'en').map(([key,lang]) => <option key={key} value={key}>{lang.name}</option>)}
-  </select></label>;
-}
 export function Modal({ title, subtitle, children, onClose, wide = false }: { title: string; subtitle?: string; children: ReactNode; onClose?: () => void; wide?: boolean }) {
   const dialog = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const root = dialog.current;
     root?.focus();
     const listener = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onClose) { e.preventDefault(); onClose(); }
+      if (e.key === 'Escape' && close.current) { e.preventDefault(); close.current(); }
       if (e.key !== 'Tab' || !root) return;
       const controls = Array.from(root.querySelectorAll<HTMLElement>('button:not(:disabled), select:not(:disabled), input:not(:disabled), textarea:not(:disabled), [tabindex="0"]')).filter(el => el.getClientRects().length);
       if (!controls.length) { e.preventDefault(); return; }
@@ -26,7 +21,7 @@ export function Modal({ title, subtitle, children, onClose, wide = false }: { ti
     };
     document.addEventListener('keydown', listener);
     return () => { document.removeEventListener('keydown', listener); previous?.focus(); };
-  }, [onClose]);
+  }, []);
   return <div className="modal-backdrop"><div role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={dialog} className={'modal ' + (wide?'modal-wide':'')}>
     <div className="modal-heading"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div>{onClose && <button aria-label="Close dialog" className="icon-button" onClick={onClose}><X size={20}/></button>}</div>{children}
   </div></div>;
