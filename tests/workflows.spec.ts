@@ -19,6 +19,12 @@ async function openDrawing(page: Page, name: string) {
   await page.locator('.drawing-card').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: 'Open drawing', exact: true }).click();
   await expect(page.getByTestId('drawing-language')).toBeVisible();
 }
+async function openLocateDemo(page: Page) {
+  await page.getByLabel('Translation provider', { exact: true }).selectOption('demo');
+  await openDrawing(page, 'Locate_Demo.dwg');
+  await page.getByRole('button', { name: 'Translate All', exact: true }).click();
+  await selectLanguage(page, 'French');
+}
 async function run(page: Page, original = false) {
   if (original) await page.getByRole('radio', { name: /Translate original file/ }).check();
   await page.getByRole('dialog').getByRole('button', { name: 'Translate', exact: true }).click();
@@ -44,6 +50,8 @@ async function locate(page: Page, id: string, name: string) {
   expect(center.x).toBeLessThan(2); expect(center.y).toBeLessThan(2);
 }
 test('compact setup has only language and output choices, defaults to a copy, and cancels without work', async ({ page }, info) => {
+  await expect(page.locator('.locate-demo-card')).toHaveCount(0);
+  await expect(page.getByText('A PRACTICAL REVIEW SCENARIO', { exact: true })).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('home.png'), fullPage: true });
   await openDrawing(page, 'Level_01.dwg');
   await page.getByRole('button', { name: 'Translate All', exact: true }).click();
@@ -68,7 +76,7 @@ test('compact setup has only language and output choices, defaults to a copy, an
 });
 test('Locate demo keeps navigation within the located status while report filters stay unchanged', async ({ page }, info) => {
   await page.getByLabel('Translation provider', { exact: true }).selectOption('gemini');
-  await page.getByRole('button', { name: 'Try Locate demo', exact: true }).click();
+  await openLocateDemo(page);
   await expect(page.getByLabel('Translation provider', { exact: true })).toHaveValue('demo');
   await expect(page.locator('[data-selected-language="fr"]')).toBeVisible();
   await run(page);
@@ -194,23 +202,23 @@ test('batch scope, per-file progress, drawing filters, and cross-file instance n
   await page.locator('.instance-bar').getByRole('button', { name: 'Previous', exact: true }).click();
   await expect(page.locator('.ribbon-title')).toContainText('Level_02_FR.dwg');
 });
-test('fresh Locate inputs preserve previous originals, copies, and reports', async ({ page }) => {
-  await page.getByRole('button', { name: 'Try Locate demo', exact: true }).click();
-  await run(page, true);
-  await page.getByRole('button', { name: 'Home', exact: true }).click();
-  await page.getByRole('button', { name: 'Try Locate demo', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Translate Locate_Demo_2.dwg', exact: true })).toBeVisible();
+test('repeated Locate drawing copies preserve the input, prior outputs, and reports', async ({ page }) => {
+  await openLocateDemo(page);
   await run(page);
   await page.getByRole('button', { name: 'Home', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Locate_Demo.dwg', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Locate_Demo_2.dwg', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Locate_Demo_FR.dwg', exact: true })).toBeVisible();
+  await openLocateDemo(page);
+  await expect(page.getByRole('heading', { name: 'Translate Locate_Demo.dwg', exact: true })).toBeVisible();
+  await run(page);
+  await page.getByRole('button', { name: 'Home', exact: true }).click();
+  for (const name of ['Locate_Demo.dwg', 'Locate_Demo_FR.dwg', 'Locate_Demo_FR_2.dwg']) {
+    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  }
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cad-translate-studio-v2')!));
   expect(stored.jobs).toHaveLength(2);
-  expect(stored.drawings.find((d: {name:string}) => d.name === 'Locate_Demo_2.dwg').objects.every((o:{text:string}) => o.text === 'FIRE PUMP ROOM')).toBe(true);
+  expect(stored.drawings.find((d: { name: string }) => d.name === 'Locate_Demo.dwg').objects.every((o: { text: string; language: string }) => o.text === 'FIRE PUMP ROOM' && o.language === 'en')).toBe(true);
 });
 test('locked objects refuse editing and preserve retained input text', async ({ page }) => {
-  await page.getByRole('button', { name: 'Try Locate demo', exact: true }).click();
+  await openLocateDemo(page);
   await run(page);
   await locate(page, ids[2], 'Locate_Demo_FR.dwg');
   await page.locator('[data-object-id="' + ids[2] + '"]').dblclick();
@@ -370,7 +378,7 @@ test('keyboard editing keeps focus while typing, and compact dialog traps focus 
 });
 
 test('target selection updates submission counts, requires a language, and switches multi-target output to copies',async({page})=>{
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await expect(page.getByTestId('mt-preview-total')).toHaveText('3');
   await page.getByRole('radio',{name:/Translate original file/}).check();
   await selectLanguage(page,'German');
@@ -388,7 +396,7 @@ test('target selection updates submission counts, requires a language, and switc
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('cad-translate-studio-v2')!).jobs.length)).toBe(0);
 });
 test('one multi-language job creates three independent copies with correct progress, report rows and Locate references',async({page},info)=>{
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await selectLanguage(page,'German');
   await selectLanguage(page,'Chinese (Simplified)');
   await expect(page.getByTestId('mt-preview-total')).toHaveText('9');
@@ -489,7 +497,7 @@ test('mixed-language input counts same-target text and resubmits it for every re
 });
 
 test('global language dropdown searches native names and codes, keeps selected chips, and supports keyboard selection',async({page},info)=>{
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   const trigger=page.getByRole('combobox',{name:'Target languages',exact:true});
   await trigger.focus(); await page.keyboard.press('ArrowDown');
   const search=page.getByRole('searchbox',{name:'Search languages',exact:true});
@@ -604,7 +612,7 @@ test('English is selectable as a target for a translated input',async({page})=>{
 });
 test('search dropdown and selected chips fit a laptop and narrow dialog',async({page},info)=>{
   await page.setViewportSize({width:1280,height:800});
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await selectLanguage(page,'Spanish'); await selectLanguage(page,'Japanese'); await selectLanguage(page,'Chinese (Traditional)');
   await page.screenshot({path:info.outputPath('language-chips-laptop.png')});
   await page.getByRole('combobox',{name:'Target languages',exact:true}).click();
@@ -624,7 +632,7 @@ test('Home reports Locate opens a compact navigator and restores the same report
   await expect(page.locator('.drawing-ribbon').getByRole('button',{name:'Report',exact:true})).toHaveCount(0);
   await expect(page.locator('.locate-navigator')).toHaveCount(0);
   await page.getByRole('button',{name:'Home',exact:true}).click();
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await run(page);
   const jobId=await page.locator('.report').getAttribute('data-report-job-id');
   await page.getByRole('button',{name:'Home',exact:true}).click();
@@ -655,11 +663,11 @@ test('Home reports Locate opens a compact navigator and restores the same report
   await expect(page.locator('.report tbody tr')).toHaveCount(1);
 });
 test('Back to report returns to an older selected job and each job keeps its own view',async({page})=>{
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await run(page);
   const olderId=await page.locator('.report').getAttribute('data-report-job-id');
   await page.getByRole('button',{name:'Home',exact:true}).click();
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await selectLanguage(page,'German');
   await page.getByRole('button',{name:'Remove French',exact:true}).click();
   await run(page);
@@ -715,7 +723,7 @@ test('returning to the report preserves scroll position and the navigator stays 
 });
 
 test('saved Unchanged results merge into Skipped after reload and keep Locate references',async({page})=>{
-  await page.getByRole('button',{name:'Try Locate demo',exact:true}).click();
+  await openLocateDemo(page);
   await run(page);
   const jobId=await page.locator('.report').getAttribute('data-report-job-id');
   await page.evaluate(()=>{

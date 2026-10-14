@@ -56,7 +56,7 @@ Successful output updates the object's text and language. Skipped or failed obje
 
 ## Try Locate demo
 
-On Home, click **Try Locate demo**. This opens a fresh English `Locate_Demo.dwg`, selects Offline demo and French, then shows the ordinary translation dialog. Leave **Create translated copy** selected and click **Translate**.
+On Home, open `Locate_Demo.dwg` from Project drawings. Choose **Offline demo**, click **Translate All**, and select **French**. Leave **Create translated copy** selected and click **Translate**.
 
 The normal job engine processes five spatially separated objects with the **exact same submitted source text, FIRE PUMP ROOM**:
 
@@ -72,7 +72,7 @@ Filter **Warnings**, then click **Locate**. The canvas opens the output file, ce
 
 This demonstrates why searching for words alone is insufficient: identical labels can require different actions. Locate uses the output drawing ID and stable object ID. Its instance navigation matches both the original source snapshot and the located row’s status. It can cross drawings and target-language copies while staying within that status.
 
-The unchanged fixture is tied only to `locate-demo-unchanged` in offline mode. Gemini results remain service-derived. The demo shortcut never clears previous outputs or reports. If an English demo input was modified, it creates a fresh numbered input; a pristine input can be reused.
+The unchanged fixture is tied only to `locate-demo-unchanged` in offline mode. Gemini results remain service-derived. The demo drawing uses the ordinary translation workflow. Copy output keeps its input unchanged; repeated copy jobs create numbered output filenames and retain previous reports.
 
 ## Other walkthroughs
 
